@@ -433,33 +433,43 @@ public class ThermalPrinterUtil {
             PageFormat pf = job.defaultPage();
             Paper paper = pf.getPaper();
             
-            // Remove margins completely to ensure we get the absolute max printable width
-            paper.setImageableArea(0, 0, paper.getWidth(), paper.getHeight());
-            pf.setPaper(paper);
+            double paperWidth = paper.getWidth() > 0 ? paper.getWidth() : 226.0; // ~80mm (226 points)
+            double logicalToPoints = paperWidth / (double) logicalWidth;
+            double finalScale = (logicalToPoints / dpiScale) * 1.06;
+            double totalImageHeightPoints = img.getHeight() * finalScale;
+            
+            // Dynamic paper height: Set the paper size to match the exact receipt height plus padding.
+            // This prevents Windows printer drivers from shrinking long receipts to fit fixed page limits.
+            double neededPaperHeight = Math.max(paper.getHeight(), totalImageHeightPoints + 36.0);
+            try {
+                paper.setSize(paperWidth, neededPaperHeight);
+                paper.setImageableArea(0, 0, paperWidth, neededPaperHeight);
+                pf.setPaper(paper);
+            } catch (Exception ignore) {}
 
             job.setPrintable(new Printable() {
                 @Override
                 public int print(Graphics graphics, PageFormat pageFormat, int pageIndex) throws PrinterException {
-                    if (pageIndex > 0) return NO_SUCH_PAGE;
+                    double pageH = pageFormat.getImageableHeight();
+                    if (pageH <= 0) pageH = neededPaperHeight;
+                    
+                    int maxPages = (int) Math.ceil(totalImageHeightPoints / pageH);
+                    if (maxPages <= 0) maxPages = 1;
+                    
+                    if (pageIndex >= maxPages) return NO_SUCH_PAGE;
+                    
                     Graphics2D g2d = (Graphics2D) graphics;
                     g2d.translate(pageFormat.getImageableX(), pageFormat.getImageableY());
                     
-                    // The all-important invariant: printed receipt width = printer imageable width
-                    double imageableWidth = pageFormat.getImageableWidth();
-                    
-                    // We map the logical layout width EXACTLY to the printer's imageable points
-                    double logicalToPoints = imageableWidth / (double) logicalWidth;
-                    
-                    // Since the image was rendered at a high DPI (dpiScale), its physical pixel 
-                    // dimensions are larger. We compensate for dpiScale to draw it perfectly.
-                    double finalScale = logicalToPoints / dpiScale;
-                    
                     // --- FIX FOR TVS RP 3230 LEFT MARGIN ---
-                    // Shift the print slightly to the left to consume the hardware left margin
                     g2d.translate(-10, 0); 
-                    // Slightly increase the scale (e.g. +6%) to fill the 80mm paper completely
-                    finalScale = finalScale * 1.06;
                     
+                    // Vertical page translation: cleanly prints subsequent pages on fixed-page printers
+                    if (pageIndex > 0) {
+                        g2d.translate(0, -pageIndex * pageH);
+                    }
+                    
+                    // Scale graphics to constant 100% full width (never shrinks font size)
                     g2d.scale(finalScale, finalScale);
                     g2d.drawImage(img, 0, 0, null);
                     return PAGE_EXISTS;
