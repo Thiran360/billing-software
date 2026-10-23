@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Mustafa Store Billing</string>
+    <string name="title_billing">New Bill</string>
+    <string name="title_products">Products &amp; Inventory</string>
+    <string name="title_customers">Customers</string>
+    <string name="title_history">Bill History</string>
+    <string name="title_settings">Settings</string>
+</resources>

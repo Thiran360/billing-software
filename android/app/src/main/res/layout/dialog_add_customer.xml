@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <EditText
+        android:id="@+id/etCustName"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:hint="Customer Name"
+        android:inputType="textPersonName|textCapWords" />
+
+    <EditText
+        android:id="@+id/etCustMobile"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginTop="8dp"
+        android:hint="Mobile Number"
+        android:inputType="phone" />
+
+    <EditText
+        android:id="@+id/etCustAddress"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginTop="8dp"
+        android:hint="Address"
+        android:inputType="textCapSentences" />
+
+    <EditText
+        android:id="@+id/etCustPending"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginTop="8dp"
+        android:hint="Opening Pending Due (₹)"
+        android:inputType="numberDecimal" />
+
+</LinearLayout>
