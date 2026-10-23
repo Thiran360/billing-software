@@ -2,6 +2,8 @@ target/
 bin/
 *.class
 *.jar
+!gradle-wrapper.jar
+!android/gradle/wrapper/gradle-wrapper.jar
 *.zip
 *.db
 *.pdf
@@ -33,7 +35,6 @@ CheckExcel.java
 CheckExcel.class
 CheckHeaders.java
 CheckHeaders.class
-ExcelParser.java
 ExcelParser.class
 SyncExcel.java
 SyncExcel.class

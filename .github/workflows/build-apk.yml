@@ -23,31 +23,16 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Download Gradle 8.4
-        run: |
-          wget -q https://services.gradle.org/distributions/gradle-8.4-bin.zip -O /tmp/gradle.zip
-          unzip -q /tmp/gradle.zip -d /opt/gradle
-          echo "/opt/gradle/gradle-8.4/bin" >> $GITHUB_PATH
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
 
-      - name: Verify Tools
-        run: |
-          java -version
-          gradle --version
-          echo "Android SDK: $ANDROID_HOME"
+      - name: Make Gradlew Executable
+        working-directory: android
+        run: chmod +x gradlew
 
       - name: Build Debug APK
         working-directory: android
-        env:
-          ANDROID_HOME: /usr/local/lib/android/sdk
-          ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
-        run: gradle assembleDebug --no-daemon --stacktrace
-
-      - name: Build Release APK
-        working-directory: android
-        env:
-          ANDROID_HOME: /usr/local/lib/android/sdk
-          ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
-        run: gradle assembleRelease --no-daemon
+        run: ./gradlew assembleDebug --no-daemon --stacktrace
 
       - name: Upload APK as Artifact
         uses: actions/upload-artifact@v4
