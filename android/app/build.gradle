@@ -20,10 +20,9 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            signingConfig signingConfigs.debug
+            // Uses default debug signing so APK can be installed directly on phone without Play Store
         }
         debug {
-            applicationIdSuffix ""
             debuggable true
         }
     }
