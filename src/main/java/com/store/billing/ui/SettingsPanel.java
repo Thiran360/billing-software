@@ -224,9 +224,21 @@ public class SettingsPanel extends JPanel {
     }
 
     private void loadSettings() {
-        txtShopName.setText(settingsDAO.getSetting("shop_name", "MUSTAFA STORES"));
-        txtShopSince.setText(settingsDAO.getSetting("shop_since", ""));
-        txtShopAddress.setText(settingsDAO.getSetting("shop_address", "123 Main Street, City"));
+        String sName = settingsDAO.getSetting("shop_name", "முஸ்தபா ஸ்டோர்ஸ்");
+        if (sName == null || sName.trim().isEmpty() || "MUSTAFA STORES".equalsIgnoreCase(sName.trim())) {
+            sName = "முஸ்தபா ஸ்டோர்ஸ்";
+        }
+        txtShopName.setText(sName);
+        String sSince = settingsDAO.getSetting("shop_since", "Since 1992");
+        if (sSince == null || sSince.trim().isEmpty()) {
+            sSince = "Since 1992";
+        }
+        txtShopSince.setText(sSince);
+        String sAddr = settingsDAO.getSetting("shop_address", "B1, Pugalenthi Street, Gobi");
+        if (sAddr == null || sAddr.trim().isEmpty() || "123 Main Street, City".equalsIgnoreCase(sAddr.trim()) || "123 Main Street".equalsIgnoreCase(sAddr.trim())) {
+            sAddr = "B1, Pugalenthi Street, Gobi";
+        }
+        txtShopAddress.setText(sAddr);
         txtShopPhone.setText(settingsDAO.getSetting("shop_phone", "+91 9876543210"));
         
         String savedPrinter = settingsDAO.getSetting("default_printer", "None (Show System Dialog)");

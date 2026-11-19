@@ -73,6 +73,15 @@ public class ThermalPrinterUtil {
     public static byte[] buildNativeEscPosBill(Bill bill, List<BillItem> currentItems,
                                                String shopName, String shopAddress, String shopPhone,
                                                String language, boolean includeUpi, String upiId) throws Exception {
+        if (shopName == null || shopName.trim().isEmpty() || "MUSTAFA STORES".equalsIgnoreCase(shopName.trim())) {
+            shopName = "முஸ்தபா ஸ்டோர்ஸ்";
+        }
+        if (shopAddress == null || shopAddress.trim().isEmpty() || "123 Main Street, City".equalsIgnoreCase(shopAddress.trim()) || "123 Main Street".equalsIgnoreCase(shopAddress.trim())) {
+            shopAddress = "B1, Pugalenthi Street, Gobi";
+        }
+        if (shopPhone == null || shopPhone.trim().isEmpty()) {
+            shopPhone = "+91 9876543210";
+        }
         ByteArrayOutputStream out = new ByteArrayOutputStream();
 
         // 1. ESC @ (Initialize Printer)
@@ -92,6 +101,7 @@ public class ThermalPrinterUtil {
         // Normal text (ESC ! 0x00)
         out.write(new byte[]{0x1B, 0x21, 0x00});
         out.write(new byte[]{0x1B, 0x45, 0x00});
+        out.write("Since 1992\n".getBytes(StandardCharsets.US_ASCII));
         if (shopAddress != null && !shopAddress.trim().isEmpty()) {
             out.write((shopAddress + "\n").getBytes(StandardCharsets.US_ASCII));
         }
@@ -306,7 +316,8 @@ public class ThermalPrinterUtil {
         printText.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
         printText.setFont(new Font("Nirmala UI", Font.PLAIN, 14));
         printText.setContentType("text/html");
-        printText.setText(textPane != null ? textPane.getText() : "");
+        String rawHtml = (textPane != null) ? (String) textPane.getClientProperty("rawHtml") : null;
+        printText.setText(rawHtml != null ? rawHtml : (textPane != null ? textPane.getText() : ""));
         printText.setEditable(false);
         printText.setBackground(Color.WHITE);
         
@@ -652,7 +663,7 @@ public class ThermalPrinterUtil {
                 case "pand.":
                 case "bundle":
                 case "பண்டல்":
-                    return "Pand.";
+                    return "பண்";
                 case "packet":
                 case "pac":
                 case "pac.":

@@ -2365,11 +2365,47 @@ public class BillingPanel extends JPanel {
         }
     }
     
+    private static final java.util.regex.Pattern LATIN_SPLIT_PATTERN = 
+        java.util.regex.Pattern.compile("([A-Za-z0-9\\.\\-\\(\\)\\/\\+\\&\\'\\,\\s]+|[^A-Za-z0-9\\.\\-\\(\\)\\/\\+\\&\\'\\,\\s]+)");
+
+    public static String scaleLatinText(String text) {
+        if (text == null || text.isEmpty()) return "";
+        StringBuilder sb = new StringBuilder();
+        java.util.regex.Matcher m = LATIN_SPLIT_PATTERN.matcher(text);
+        while (m.find()) {
+            String chunk = m.group();
+            if (chunk.matches(".*[A-Za-z0-9].*")) {
+                sb.append("<span style='font-family: Arial, sans-serif; font-weight: bold; color: #000000;'><b>")
+                  .append(chunk)
+                  .append("</b></span>");
+            } else {
+                sb.append("<span style='font-family: \"Nirmala UI Bold\", \"Nirmala UI\", sans-serif; font-size: 108%; font-weight: bold; color: #000000;'><b>")
+                  .append(chunk)
+                  .append("</b></span>");
+            }
+        }
+        return sb.toString();
+    }
+
     private void printReceipt(Bill bill, List<BillItem> currentItems, boolean skipPreview) {
-        String shopName = settingsDAO.getSetting("shop_name", "MUSTAFA STORES");
-        String shopSince = settingsDAO.getSetting("shop_since", "");
-        String shopAddress = settingsDAO.getSetting("shop_address", "");
-        String shopPhone = settingsDAO.getSetting("shop_phone", "");
+        String shopName = settingsDAO.getSetting("shop_name", "முஸ்தபா ஸ்டோர்ஸ்");
+        if (shopName == null || shopName.trim().isEmpty() || "MUSTAFA STORES".equalsIgnoreCase(shopName.trim())) {
+            shopName = "முஸ்தபா ஸ்டோர்ஸ்";
+        }
+        String shopSince = settingsDAO.getSetting("shop_since", "Since 1992");
+        if (shopSince == null || shopSince.trim().isEmpty()) {
+            shopSince = "Since 1992";
+        }
+        String shopAddress = settingsDAO.getSetting("shop_address", "B1, Pugalenthi Street, Gobi");
+        if (shopAddress == null || shopAddress.trim().isEmpty() || 
+            "123 Main Street, City".equalsIgnoreCase(shopAddress.trim()) || 
+            "123 Main Street".equalsIgnoreCase(shopAddress.trim())) {
+            shopAddress = "B1, Pugalenthi Street, Gobi";
+        }
+        String shopPhone = settingsDAO.getSetting("shop_phone", "+91 9876543210");
+        if (shopPhone == null || shopPhone.trim().isEmpty()) {
+            shopPhone = "+91 9876543210";
+        }
         
         int itemsPerPage;
         if ("None".equals(cmbItemsPerPage.getSelectedItem())) {
@@ -2381,18 +2417,17 @@ public class BillingPanel extends JPanel {
         if (totalPages == 0) totalPages = 1;
 
         boolean printTamil = "Tamil".equals(cmbPrintLanguage.getSelectedItem().toString());
-        String baseFontSize = printTamil ? "54px" : "44px";
+        String baseFontSize = "14pt";
         
-        String thNo = "<b>S.No</b>";
-        String thItem = printTamil ? "<b><span style='font-size: 34px; font-weight: 900;'>\u0BAA\u0BCA\u0BB0\u0BC1\u0BB3\u0BCD</span></b>" : "<b>Item</b>";
-        String thQty = printTamil ? "<b><span style='font-size: 34px; font-weight: 900;'>\u0B85\u0BB3\u0BB5\u0BC1</span></b>" : "<b>Qty</b>";
-        String thTotal = printTamil ? "<b><span style='font-size: 34px; font-weight: 900;'>\u0BAE\u0BA4\u0BBF\u0BAA\u0BCD\u0BAA\u0BC1</span></b>" : "<b>Total</b>";
+        String thItem = printTamil ? "எண்&nbsp;&nbsp;பொருள்" : "No.&nbsp;&nbsp;Item";
+        String thQty = printTamil ? "அளவு" : "Qty";
+        String thTotal = printTamil ? "மதிப்பு" : "Total";
 
-        String lblTot = printTamil ? "\u0BAE\u0BCA\u0BA4\u0BCD\u0BA4\u0BAE\u0BCD:" : "Tot:";
-        String lblDiscount = printTamil ? "\u0B95\u0BB4\u0BBF\u0BA4\u0BCD\u0BA4\u0BB2\u0BCD:" : "Discount:";
-        String lblNetTot = printTamil ? "\u0BAE\u0BC0\u0BA4\u0BBF \u0BA4\u0BCA\u0B95\u0BC8:" : "Net Tot:";
-        String lblCash = printTamil ? "\u0BB5\u0BB0\u0BB5\u0BC1:" : "Cash:";
-        String lblBalance = printTamil ? "\u0BAA\u0BBE\u0B95\u0BCD\u0B95\u0BBF:" : "Balance:";
+        String lblTot = printTamil ? "மொத்தம்:" : "Tot:";
+        String lblDiscount = printTamil ? "கழித்தல்:" : "Discount:";
+        String lblNetTot = printTamil ? "மீதம்:" : "Net Tot:";
+        String lblCash = printTamil ? "வரவு:" : "Cash:";
+        String lblBalance = printTamil ? "பாக்கி:" : "Balance:";
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy hh:mm a");
         String dateStr = dateFormat.format(bill.getBillDate() != null ? bill.getBillDate() : new java.util.Date());
@@ -2406,35 +2441,36 @@ public class BillingPanel extends JPanel {
             String pageStr = "Page " + (p + 1) + " / " + totalPages;
 
             // =========================================================================
-            // 1. BUILD PHYSICAL PRINT PANEL (For Thermal Printer, UNTOUCHED)
+            // 1. BUILD PHYSICAL PRINT PANEL (For Thermal Printer, 380px logical width)
             // =========================================================================
             StringBuilder html = new StringBuilder();
-            html.append("<html><body style='font-family: sans-serif; font-size: ").append(baseFontSize).append("; margin: 0px; padding: 0px;'>");
+            html.append("<html><body style='font-family: \"Nirmala UI\", \"Segoe UI\", Arial, sans-serif; font-size: ").append(baseFontSize).append("; margin: 0px; padding: 0px; color: black;'>");
             html.append("<div style='text-align: center;'>");
-            html.append("<b><font size='6' color='black'>").append(shopName.toUpperCase()).append("</font></b><br>");
+            // 1. Shop Name: prominent header (32pt Bold, weight 900), centered, single line
+            html.append("<b><span style='font-family: \"Nirmala UI\", sans-serif; font-size: 18px; font-weight: 900; color: #000000;'>").append(shopName).append("</span></b><br>");
             if (shopSince != null && !shopSince.trim().isEmpty()) {
                 String sinceStr = shopSince.trim().toLowerCase().startsWith("since") ? shopSince.trim() : "Since " + shopSince.trim();
-                html.append("<b><span style='font-size: 38px; color: black;'>").append(sinceStr).append("</span></b><br>");
+                html.append("<b><span style='font-size: 14px; font-weight: bold; color: black;'>").append(sinceStr).append("</span></b><br>");
             }
             if (shopAddress != null && !shopAddress.trim().isEmpty()) {
-                html.append("<span style='font-weight: bold;'>").append(shopAddress).append("</span><br>");
+                html.append("<span style='font-size: 13px; font-weight: bold; color: black;'>").append(shopAddress).append("</span><br>");
             }
             if (shopPhone != null && !shopPhone.trim().isEmpty()) {
-                html.append("<span style='font-weight: bold;'>Phone No: ").append(shopPhone).append("</span><br>");
+                html.append("<span style='font-size: 13px; font-weight: bold; color: black;'>Phone No: ").append(shopPhone).append("</span><br>");
             }
             
-            html.append("<b style='font-size: 44px; font-weight: 900; color: black;'>QUOTATION</b><br>");
+            html.append("<b style='font-size: 16px; font-weight: 900; color: black;'>QUOTATION</b><br>");
             html.append("</div><hr style='border: 1px dashed black;'>");
             
-            html.append("<table width='100%' cellpadding='0' cellspacing='0' style='font-size: ").append(baseFontSize).append("; font-weight: normal;'>");
+            html.append("<table width='100%' cellpadding='0' cellspacing='0' style='font-size: 13px; font-weight: bold; color: black;'>");
             html.append("<tr>");
-            html.append("<td width='26%' align='left'><b>").append(noStr).append("</b></td>");
-            html.append("<td width='48%' align='center'><b>").append(dateStr).append("</b></td>");
-            html.append("<td width='26%' align='right'><b>").append(pageStr).append("</b></td>");
+            html.append("<td width='28%' align='left'><b>").append(noStr).append("</b></td>");
+            html.append("<td width='44%' align='center'><b>").append(dateStr).append("</b></td>");
+            html.append("<td width='28%' align='right'><b>").append(pageStr).append("</b></td>");
             html.append("</tr>");
             html.append("</table>");
             
-            html.append("<div style='margin-top: 5px;'><b>To: ").append(bill.getCustomerName().isEmpty() ? "Customer" : bill.getCustomerName()).append("</b><br>");
+            html.append("<div style='margin-top: 3px; font-size: 13px; color: black;'><b>To: ").append(bill.getCustomerName().isEmpty() ? "Customer" : bill.getCustomerName()).append("</b><br>");
             if (bill.getCustomerObj() != null) {
                 if (bill.getCustomerObj().getMobile() != null && !bill.getCustomerObj().getMobile().isEmpty()) {
                     html.append("&nbsp;&nbsp;&nbsp;&nbsp;<b>Ph: ").append(bill.getCustomerObj().getMobile()).append("</b><br>");
@@ -2445,12 +2481,12 @@ public class BillingPanel extends JPanel {
             }
             html.append("</div><hr style='border: 1px dashed black;'>");
             
-            html.append("<table width='100%' cellspacing='0' cellpadding='3' style='font-size: ").append(baseFontSize).append(";'>");
+            // 3-Column Table: எண் பொருள் | அளவு | மதிப்பு
+            html.append("<table width='100%' cellspacing='0' cellpadding='1' style='font-size: 13px; font-weight: bold; color: black;'>");
             html.append("<tr>");
-            html.append("<th align='center' width='120' style='font-weight: 900; color: black;'>").append(thNo).append("</th>");
-            html.append("<th align='left' width='100%' style='font-weight: bold; color: black; padding-left: 5px;'>").append(thItem).append("</th>");
-            html.append("<th align='left' nowrap style='padding-left: 5px; padding-right: 30px; font-weight: bold; color: black;'>").append(thQty).append("</th>");
-            html.append("<th align='right' nowrap style='font-weight: bold; color: black;'>").append(thTotal).append("</th>");
+            html.append("<th colspan='2' align='left' style='font-size: 13px; font-weight: 900; color: black; padding: 2px 0px;'><b>").append(thItem).append("</b></th>");
+            html.append("<th align='left' width='75' nowrap style='font-size: 13px; font-weight: 900; color: black; padding: 2px 4px;'><b>").append(thQty).append("</b></th>");
+            html.append("<th align='right' width='80' nowrap style='font-size: 13px; font-weight: 900; color: black; padding: 2px 0px 2px 4px;'><b>").append(thTotal).append("</b></th>");
             html.append("</tr>");
             html.append("<tr><td colspan='4'><hr style='border: 1px dashed black;'></td></tr>");
             
@@ -2464,14 +2500,16 @@ public class BillingPanel extends JPanel {
                     itemName = item.getTamilName();
                 }
                 
-                boolean isPendingLine = itemName.contains("Pending") || itemName.contains("\u0BAA\u0BBE\u0B95\u0BCD\u0B95\u0BBF");
+                boolean isPendingLine = itemName.contains("Pending") || itemName.contains("பாக்கி");
                 String qtyUnit = isPendingLine ? "" : ThermalPrinterUtil.formatQtyUnit(item.getQuantity(), item.getUnitType(), printTamil);
+                // Abbreviate long unit names to prevent wrapping in narrow qty column
+                qtyUnit = qtyUnit.replace("பண்டல்", "பண்").replace("Pandal", "பண்").replace("pandal", "பண்").replace("Pand.", "பண்");
                 
                 html.append("<tr>");
-                html.append("<td align='right' valign='top' width='120' style='padding-right: 6px;'><b>").append(i + 1).append(".</b></td>");
-                html.append("<td align='left' valign='top' width='100%' style='word-break: break-word; padding-left: 5px;'><b>").append(itemName).append("</b></td>");
-                html.append("<td align='left' valign='top' nowrap style='padding-left: 5px; padding-right: 30px;'><b>").append(qtyUnit).append("</b></td>");
-                html.append("<td align='right' valign='top' nowrap><b>").append(String.format("%.2f", item.getSubtotal())).append("</b></td>");
+                html.append("<td align='left' valign='top' width='22' nowrap style='padding: 2px 0px; font-size: 13px; font-weight: bold; color: #000000;'><b>").append(i + 1).append(".</b></td>");
+                html.append("<td align='left' valign='top' width='198' style='word-break: break-word; padding: 2px 0px 2px 2px; font-size: 13px; font-weight: bold; color: #000000;'>").append(scaleLatinText(itemName)).append("</td>");
+                html.append("<td align='left' valign='top' width='75' nowrap style='padding: 2px 4px; font-size: 13px; font-weight: bold; color: #000000;'>").append(scaleLatinText(qtyUnit)).append("</td>");
+                html.append("<td align='right' valign='top' width='80' nowrap style='padding: 2px 0px 2px 4px; font-size: 13px; font-weight: bold; color: #000000;'><b><span style='font-family: Arial, sans-serif; font-size: 13px; font-weight: bold; color: #000000;'>").append(String.format("%.2f", item.getSubtotal())).append("</span></b></td>");
                 html.append("</tr>");
             }
             
@@ -2484,52 +2522,48 @@ public class BillingPanel extends JPanel {
 
             if (p == totalPages - 1) {
                 html.append("<hr style='border: 1px dashed black;'>");
-                html.append("<table width='100%' cellpadding='2' cellspacing='0' style='font-size: 36px;'>");
+                html.append("<table width='100%' cellpadding='0' cellspacing='0' style='font-family: \"Nirmala UI\", sans-serif; color: black;'>");
 
-                // Show Tot always
-                html.append("<tr>");
-                html.append("<td colspan='2' align='right' valign='middle' nowrap>");
-                if (bill.getDiscount() > 0.009) {
-                    html.append("<b><font size='6' color='black'>").append(lblTot).append(" ").append(String.format("%.2f", bill.getTotalAmount() + bill.getDiscount())).append("</font></b>");
+                // Total and Breakdown Rows — tight alignment: label width=320, amount width=60 (labels brought close to right-aligned amounts)
+                if (bill.getPreviousPending() > 0.009) {
+                    double dItemsTot = bill.getTotalAmount() + bill.getDiscount() - bill.getPreviousPending();
+                    if (dItemsTot > 0.009) {
+                        html.append("<tr><td width='320' align='right' nowrap style='padding: 2px 6px 2px 0px; font-size: 13px; font-weight: bold; white-space: nowrap;'><b>").append(printTamil ? "பொருட்கள் மொத்தம்:" : "Items Tot:").append("</b></td><td width='60' align='right' nowrap style='padding: 2px 0px; font-size: 13px; font-weight: bold; white-space: nowrap;'><b>").append(String.format("%.2f", dItemsTot)).append("</b></td></tr>");
+                    }
+                    if (bill.getDiscount() > 0.009) {
+                        html.append("<tr><td width='320' align='right' nowrap style='padding: 2px 6px 2px 0px; font-size: 13px; font-weight: bold; white-space: nowrap;'><b>").append(lblDiscount).append("</b></td><td width='60' align='right' nowrap style='padding: 2px 0px; font-size: 13px; font-weight: bold; white-space: nowrap;'><b>").append(String.format("%.2f", bill.getDiscount())).append("</b></td></tr>");
+                    }
+                    html.append("<tr><td width='320' align='right' nowrap style='padding: 2px 6px 2px 0px; font-size: 13px; font-weight: bold; white-space: nowrap;'><b>").append(printTamil ? "பழைய பாக்கி:" : "Prev Pending:").append("</b></td><td width='60' align='right' nowrap style='padding: 2px 0px; font-size: 13px; font-weight: bold; white-space: nowrap;'><b>").append(String.format("%.2f", bill.getPreviousPending())).append("</b></td></tr>");
+                    html.append("<tr><td width='320' align='right' nowrap style='padding: 4px 6px 4px 0px; font-size: 14px; font-weight: 900; white-space: nowrap;'><b>").append(lblTot).append("</b></td><td width='60' align='right' nowrap style='padding: 4px 0px; font-size: 14px; font-weight: 900; white-space: nowrap;'><b>").append(String.format("%.2f", bill.getTotalAmount())).append("</b></td></tr>");
+                } else if (bill.getDiscount() > 0.009) {
+                    html.append("<tr><td width='320' align='right' nowrap style='padding: 4px 6px 4px 0px; font-size: 14px; font-weight: 900; white-space: nowrap;'><b>").append(lblTot).append("</b></td><td width='60' align='right' nowrap style='padding: 4px 0px; font-size: 14px; font-weight: 900; white-space: nowrap;'><b>").append(String.format("%.2f", bill.getTotalAmount() + bill.getDiscount())).append("</b></td></tr>");
+                    html.append("<tr><td width='320' align='right' nowrap style='padding: 2px 6px 2px 0px; font-size: 13px; font-weight: bold; white-space: nowrap;'><b>").append(lblDiscount).append("</b></td><td width='60' align='right' nowrap style='padding: 2px 0px; font-size: 13px; font-weight: bold; white-space: nowrap;'><b>").append(String.format("%.2f", bill.getDiscount())).append("</b></td></tr>");
+                    html.append("<tr><td width='320' align='right' nowrap style='padding: 2px 6px 2px 0px; font-size: 13px; font-weight: bold; white-space: nowrap;'><b>").append(lblNetTot).append("</b></td><td width='60' align='right' nowrap style='padding: 2px 0px; font-size: 13px; font-weight: bold; white-space: nowrap;'><b>").append(String.format("%.2f", bill.getTotalAmount())).append("</b></td></tr>");
                 } else {
-                    html.append("<b><font size='6' color='black'>").append(lblTot).append(" ").append(String.format("%.2f", bill.getTotalAmount())).append("</font></b>");
-                }
-                html.append("</td>");
-                html.append("</tr>");
-
-                if (bill.getDiscount() > 0.009) {
-                    html.append("<tr>");
-                    html.append("<td colspan='2' align='right' valign='middle' nowrap><b><font size='5' color='black'>").append(lblDiscount).append(" ").append(String.format("%.2f", bill.getDiscount())).append("</font></b></td>");
-                    html.append("</tr>");
-                    html.append("<tr>");
-                    html.append("<td colspan='2' align='right' valign='middle' nowrap><b><font size='6' color='black'>").append(lblNetTot).append(" ").append(String.format("%.2f", bill.getTotalAmount())).append("</font></b></td>");
-                    html.append("</tr>");
+                    html.append("<tr><td width='320' align='right' nowrap style='padding: 4px 6px 4px 0px; font-size: 14px; font-weight: 900; white-space: nowrap;'><b>").append(lblTot).append("</b></td><td width='60' align='right' nowrap style='padding: 4px 0px; font-size: 14px; font-weight: 900; white-space: nowrap;'><b>").append(String.format("%.2f", bill.getTotalAmount())).append("</b></td></tr>");
                 }
 
-                // Show Cash only if partial payment was entered and balance exists (Rule 3)
+                // Show Cash only if partial payment was entered and balance exists
                 boolean hasEnteredAmount = (bill.getCashAmount() > 0.009 || bill.getGpayAmount() > 0.009);
                 if (hasEnteredAmount && bill.getPaidAmount() > 0.009 && bill.getPendingAmount() > 0.009 && bill.isShowBalanceOnBill()) {
-                    html.append("<tr>");
-                    html.append("<td colspan='2' align='right' valign='middle' nowrap><b><font size='5'>").append(lblCash).append(" ").append(String.format("%.2f", bill.getPaidAmount())).append("</font></b></td>");
-                    html.append("</tr>");
+                    html.append("<tr><td width='320' align='right' nowrap style='padding: 2px 6px 2px 0px; font-size: 13px; font-weight: bold; white-space: nowrap;'><b>").append(lblCash).append("</b></td><td width='60' align='right' nowrap style='padding: 2px 0px; font-size: 13px; font-weight: bold; white-space: nowrap;'><b>").append(String.format("%.2f", bill.getPaidAmount())).append("</b></td></tr>");
                 }
                 // Show Balance only if pending exists AND showBalanceOnBill is true
                 if (bill.getPendingAmount() > 0.009 && bill.isShowBalanceOnBill()) {
-                    html.append("<tr>");
-                    html.append("<td colspan='2' align='right' valign='middle' nowrap><b><font size='5'>").append(lblBalance).append(" ").append(String.format("%.2f", bill.getPendingAmount())).append("</font></b></td>");
-                    html.append("</tr>");
+                    html.append("<tr><td width='320' align='right' nowrap style='padding: 2px 6px 2px 0px; font-size: 13px; font-weight: bold; white-space: nowrap;'><b>").append(lblBalance).append("</b></td><td width='60' align='right' nowrap style='padding: 2px 0px; font-size: 13px; font-weight: bold; white-space: nowrap;'><b>").append(String.format("%.2f", bill.getPendingAmount())).append("</b></td></tr>");
                 }
 
                 html.append("</table>");
                 html.append("<hr style='border: 1px dashed black;'>");
                 
-                html.append("<div style='text-align: center; margin-top: 5px; font-size: 36px;'><b>*** THANK YOU! VISIT AGAIN ***</b></div>");
+                html.append("<div style='text-align: center; margin-top: 4px; font-size: 13px; font-weight: bold; color: black;'><b>*** THANK YOU! VISIT AGAIN ***</b></div>");
                 html.append("</body></html>");
                 
                 JTextPane textPane = new JTextPane();
                 textPane.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
                 textPane.setFont(new Font("Nirmala UI", Font.PLAIN, 14));
                 textPane.setContentType("text/html");
+                textPane.putClientProperty("rawHtml", html.toString());
                 textPane.setText(html.toString());
                 textPane.setEditable(false);
                 JScrollPane sp = new JScrollPane(textPane);
@@ -2540,7 +2574,7 @@ public class BillingPanel extends JPanel {
                     String upiId = cmbUpiList.getSelectedItem().toString();
                     boolean includeAmount = bill.getGpayAmount() > 0.009;
                     double qrAmount = bill.getGpayAmount();
-                    ImageIcon qrIcon = com.store.billing.util.QRCodeGenerator.generateUPIQRCode(upiId, shopName, qrAmount, includeAmount, 200, 200);
+                    ImageIcon qrIcon = com.store.billing.util.QRCodeGenerator.generateUPIQRCode(upiId, shopName, qrAmount, includeAmount, 112, 112);
                     if (qrIcon != null) {
                         JPanel bottomQrPanel = new JPanel(new BorderLayout());
                         bottomQrPanel.setBackground(Color.WHITE);
@@ -2562,6 +2596,7 @@ public class BillingPanel extends JPanel {
                 textPane.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
                 textPane.setFont(new Font("Nirmala UI", Font.PLAIN, 14));
                 textPane.setContentType("text/html");
+                textPane.putClientProperty("rawHtml", html.toString());
                 textPane.setText(html.toString());
                 textPane.setEditable(false);
                 JScrollPane sp = new JScrollPane(textPane);
@@ -2576,12 +2611,12 @@ public class BillingPanel extends JPanel {
             // =========================================================================
             if (!skipPreview) {
                 StringBuilder previewHtml = new StringBuilder();
-                previewHtml.append("<html><body style='font-family: \"Nirmala UI\", \"Segoe UI\", Arial, sans-serif; font-size: 13px; margin: 10px; padding: 0px; color: #111;'>");
+                previewHtml.append("<html><body style='font-family: \"Nirmala UI\", \"Segoe UI\", Arial, sans-serif; font-size: 13px; margin: 8px; padding: 0px; color: #111;'>");
                 previewHtml.append("<div style='text-align: center;'>");
-                previewHtml.append("<b><span style='font-size: 18px; color: black;'>").append(shopName.toUpperCase()).append("</span></b><br>");
+                previewHtml.append("<b><span style='font-family: \"Nirmala UI\", sans-serif; font-size: 18px; font-weight: 900; color: black;'>").append(shopName).append("</span></b><br>");
                 if (shopSince != null && !shopSince.trim().isEmpty()) {
                     String sinceStr = shopSince.trim().toLowerCase().startsWith("since") ? shopSince.trim() : "Since " + shopSince.trim();
-                    previewHtml.append("<b><span style='font-size: 13px; color: #333;'>").append(sinceStr).append("</span></b><br>");
+                    previewHtml.append("<b><span style='font-size: 13px; font-weight: bold; color: #333;'>").append(sinceStr).append("</span></b><br>");
                 }
                 if (shopAddress != null && !shopAddress.trim().isEmpty()) {
                     previewHtml.append("<span style='font-size: 12px; font-weight: bold;'>").append(shopAddress).append("</span><br>");
@@ -2614,10 +2649,9 @@ public class BillingPanel extends JPanel {
 
                 previewHtml.append("<table width='100%' cellspacing='0' cellpadding='2' style='font-size: 13px;'>");
                 previewHtml.append("<tr>");
-                previewHtml.append("<th align='left' width='38' nowrap style='font-weight: bold; color: black;'>S.No</th>");
-                previewHtml.append("<th align='left' width='160' style='font-weight: bold; color: black; padding-left: 5px;'>").append(printTamil ? "பொருள்" : "Item").append("</th>");
-                previewHtml.append("<th align='left' width='80' nowrap style='font-weight: bold; color: black; padding-left: 5px;'>").append(printTamil ? "அளவு" : "Qty").append("</th>");
-                previewHtml.append("<th align='right' width='60' nowrap style='font-weight: bold; color: black;'>").append(printTamil ? "மதிப்பு" : "Total").append("</th>");
+                previewHtml.append("<th colspan='2' align='left' style='font-weight: 900; color: black;'>").append(thItem).append("</th>");
+                previewHtml.append("<th align='left' width='75' nowrap style='font-weight: 900; color: black; padding-left: 5px;'>").append(thQty).append("</th>");
+                previewHtml.append("<th align='right' width='80' nowrap style='font-weight: 900; color: black;'>").append(thTotal).append("</th>");
                 previewHtml.append("</tr>");
                 previewHtml.append("<tr><td colspan='4'><hr style='border-top: 1px dashed black; margin: 2px 0;'></td></tr>");
 
@@ -2627,14 +2661,14 @@ public class BillingPanel extends JPanel {
                     if (printTamil && item.getTamilName() != null && !item.getTamilName().trim().isEmpty()) {
                         itemName = item.getTamilName();
                     }
-                    boolean isPendingLine = itemName.contains("Pending") || itemName.contains("\u0BAA\u0BBE\u0B95\u0BCD\u0B95\u0BBF");
+                    boolean isPendingLine = itemName.contains("Pending") || itemName.contains("பாக்கி");
                     String qtyUnit = isPendingLine ? "" : ThermalPrinterUtil.formatQtyUnit(item.getQuantity(), item.getUnitType(), printTamil);
 
                     previewHtml.append("<tr>");
-                    previewHtml.append("<td align='left' valign='top' nowrap><b>").append(i + 1).append(".</b></td>");
-                    previewHtml.append("<td align='left' valign='top' style='word-break: break-word; padding-left: 5px;'><b>").append(itemName).append("</b></td>");
-                    previewHtml.append("<td align='left' valign='top' nowrap style='padding-left: 5px;'><b>").append(qtyUnit).append("</b></td>");
-                    previewHtml.append("<td align='right' valign='top' nowrap><b>").append(String.format("%.2f", item.getSubtotal())).append("</b></td>");
+                    previewHtml.append("<td align='left' valign='top' width='24' nowrap style='font-size: 13px; font-weight: bold; color: #000000;'><b>").append(i + 1).append(".</b></td>");
+                    previewHtml.append("<td align='left' valign='top' style='word-break: break-word; padding-left: 4px; font-size: 13px; font-weight: bold; color: #000000;'>").append(scaleLatinText(itemName)).append("</td>");
+                    previewHtml.append("<td align='left' valign='top' width='75' nowrap style='padding-left: 5px; font-size: 13px; font-weight: bold; color: #000000;'>").append(scaleLatinText(qtyUnit)).append("</td>");
+                    previewHtml.append("<td align='right' valign='top' width='80' nowrap style='font-size: 13px; font-weight: bold; color: #000000;'><b><span style='font-family: Arial, sans-serif; font-size: 13px; font-weight: bold; color: #000000;'>").append(String.format("%.2f", item.getSubtotal())).append("</span></b></td>");
                     previewHtml.append("</tr>");
                 }
                 previewHtml.append("</table>");
@@ -2650,36 +2684,30 @@ public class BillingPanel extends JPanel {
                     previewHtml.append("<hr style='border-top: 1px dashed black; margin: 4px 0;'>");
                     previewHtml.append("<table width='100%' cellpadding='2' cellspacing='0' style='font-size: 13px;'>");
 
-                    // Show Tot always
-                    previewHtml.append("<tr>");
-                    if (bill.getDiscount() > 0.009) {
-                        previewHtml.append("<td colspan='2' align='right' valign='middle' nowrap><b style='font-size: 16px; color: black;'>").append(lblTot).append(" ").append(String.format("%.2f", bill.getTotalAmount() + bill.getDiscount())).append("</b></td>");
+                    if (bill.getPreviousPending() > 0.009) {
+                        double dItemsTotPrev = bill.getTotalAmount() + bill.getDiscount() - bill.getPreviousPending();
+                        if (dItemsTotPrev > 0.009) {
+                            previewHtml.append("<tr><td align='right' nowrap style='padding-right: 6px;'><b>").append(printTamil ? "பொருட்கள் மொத்தம்:" : "Items Tot:").append("</b></td><td width='60' align='right' nowrap><b>").append(String.format("%.2f", dItemsTotPrev)).append("</b></td></tr>");
+                        }
+                        if (bill.getDiscount() > 0.009) {
+                            previewHtml.append("<tr><td align='right' nowrap style='padding-right: 6px;'><b>").append(lblDiscount).append("</b></td><td width='60' align='right' nowrap><b>").append(String.format("%.2f", bill.getDiscount())).append("</b></td></tr>");
+                        }
+                        previewHtml.append("<tr><td align='right' nowrap style='padding-right: 6px;'><b>").append(printTamil ? "பழைய பாக்கி:" : "Prev Pending:").append("</b></td><td width='60' align='right' nowrap><b>").append(String.format("%.2f", bill.getPreviousPending())).append("</b></td></tr>");
+                        previewHtml.append("<tr><td align='right' nowrap style='padding-right: 6px;'><b style='font-size: 14px; color: black;'>").append(lblTot).append("</b></td><td width='60' align='right' nowrap><b style='font-size: 14px; color: black;'>").append(String.format("%.2f", bill.getTotalAmount())).append("</b></td></tr>");
+                    } else if (bill.getDiscount() > 0.009) {
+                        previewHtml.append("<tr><td align='right' nowrap style='padding-right: 6px;'><b style='font-size: 14px; color: black;'>").append(lblTot).append("</b></td><td width='60' align='right' nowrap><b style='font-size: 14px; color: black;'>").append(String.format("%.2f", bill.getTotalAmount() + bill.getDiscount())).append("</b></td></tr>");
+                        previewHtml.append("<tr><td align='right' nowrap style='padding-right: 6px;'><b>").append(lblDiscount).append("</b></td><td width='60' align='right' nowrap><b>").append(String.format("%.2f", bill.getDiscount())).append("</b></td></tr>");
+                        previewHtml.append("<tr><td align='right' nowrap style='padding-right: 6px;'><b style='font-size: 16px; color: black;'>").append(lblNetTot).append("</b></td><td width='60' align='right' nowrap><b style='font-size: 16px; color: black;'>").append(String.format("%.2f", bill.getTotalAmount())).append("</b></td></tr>");
                     } else {
-                        previewHtml.append("<td colspan='2' align='right' valign='middle' nowrap><b style='font-size: 16px; color: black;'>").append(lblTot).append(" ").append(String.format("%.2f", bill.getTotalAmount())).append("</b></td>");
-                    }
-                    previewHtml.append("</tr>");
-
-                    if (bill.getDiscount() > 0.009) {
-                        previewHtml.append("<tr>");
-                        previewHtml.append("<td colspan='2' align='right' valign='middle' nowrap><b style='font-size: 14px; color: black;'>").append(lblDiscount).append(" ").append(String.format("%.2f", bill.getDiscount())).append("</b></td>");
-                        previewHtml.append("</tr>");
-                        previewHtml.append("<tr>");
-                        previewHtml.append("<td colspan='2' align='right' valign='middle' nowrap><b style='font-size: 16px; color: black;'>").append(lblNetTot).append(" ").append(String.format("%.2f", bill.getTotalAmount())).append("</b></td>");
-                        previewHtml.append("</tr>");
+                        previewHtml.append("<tr><td align='right' nowrap style='padding-right: 6px;'><b style='font-size: 14px; color: black;'>").append(lblTot).append("</b></td><td width='60' align='right' nowrap><b style='font-size: 14px; color: black;'>").append(String.format("%.2f", bill.getTotalAmount())).append("</b></td></tr>");
                     }
 
-                    // Show Cash only if partial payment was entered and balance exists (Rule 3)
                     boolean hasEnteredAmountPrev = (bill.getCashAmount() > 0.009 || bill.getGpayAmount() > 0.009);
                     if (hasEnteredAmountPrev && bill.getPaidAmount() > 0.009 && bill.getPendingAmount() > 0.009 && bill.isShowBalanceOnBill()) {
-                        previewHtml.append("<tr>");
-                        previewHtml.append("<td colspan='2' align='right' valign='middle' nowrap><b style='font-size: 14px;'>").append(lblCash).append(" ").append(String.format("%.2f", bill.getPaidAmount())).append("</b></td>");
-                        previewHtml.append("</tr>");
+                        previewHtml.append("<tr><td align='right' nowrap style='padding-right: 6px;'><b>").append(lblCash).append("</b></td><td width='60' align='right' nowrap><b>").append(String.format("%.2f", bill.getPaidAmount())).append("</b></td></tr>");
                     }
-                    // Show Balance only if pending exists AND showBalanceOnBill is true
                     if (bill.getPendingAmount() > 0.009 && bill.isShowBalanceOnBill()) {
-                        previewHtml.append("<tr>");
-                        previewHtml.append("<td colspan='2' align='right' valign='middle' nowrap><b style='font-size: 14px;'>").append(lblBalance).append(" ").append(String.format("%.2f", bill.getPendingAmount())).append("</b></td>");
-                        previewHtml.append("</tr>");
+                        previewHtml.append("<tr><td align='right' nowrap style='padding-right: 6px;'><b>").append(lblBalance).append("</b></td><td width='60' align='right' nowrap><b>").append(String.format("%.2f", bill.getPendingAmount())).append("</b></td></tr>");
                     }
 
                     previewHtml.append("</table>");

@@ -20,6 +20,7 @@ public class Bill {
     private String status = "Printed";
     private boolean showBalanceOnBill = true;
     private double discount = 0.0;
+    private double previousPending = 0.0;
     public Bill() {}
 
     public Bill(int id, String customerName, double totalAmount, Date billDate, String paymentMode, double paidAmount, double pendingAmount) {
@@ -79,4 +80,7 @@ public class Bill {
 
     public double getDiscount() { return discount; }
     public void setDiscount(double discount) { this.discount = discount; }
+
+    public double getPreviousPending() { return previousPending; }
+    public void setPreviousPending(double previousPending) { this.previousPending = previousPending; }
 }

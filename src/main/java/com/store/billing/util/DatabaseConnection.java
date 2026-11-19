@@ -30,6 +30,17 @@ public class DatabaseConnection {
             stmt.execute("CREATE TABLE IF NOT EXISTS shop_settings (" +
                     "setting_key VARCHAR(50) PRIMARY KEY, " +
                     "setting_value TEXT NOT NULL)");
+
+            // Ensure default shop settings are set
+            try {
+                stmt.execute("INSERT OR IGNORE INTO shop_settings (setting_key, setting_value) VALUES ('shop_name', 'முஸ்தபா ஸ்டோர்ஸ்')");
+                stmt.execute("UPDATE shop_settings SET setting_value = 'முஸ்தபா ஸ்டோர்ஸ்' WHERE setting_key = 'shop_name' AND setting_value = 'MUSTAFA STORES'");
+                stmt.execute("INSERT OR IGNORE INTO shop_settings (setting_key, setting_value) VALUES ('shop_since', 'Since 1992')");
+                stmt.execute("UPDATE shop_settings SET setting_value = 'Since 1992' WHERE setting_key = 'shop_since' AND (setting_value IS NULL OR trim(setting_value) = '')");
+                stmt.execute("INSERT OR IGNORE INTO shop_settings (setting_key, setting_value) VALUES ('shop_address', 'B1, Pugalenthi Street, Gobi')");
+                stmt.execute("UPDATE shop_settings SET setting_value = 'B1, Pugalenthi Street, Gobi' WHERE setting_key = 'shop_address' AND (setting_value = '123 Main Street, City' OR setting_value = '123 Main Street')");
+                stmt.execute("INSERT OR IGNORE INTO shop_settings (setting_key, setting_value) VALUES ('shop_phone', '+91 9876543210')");
+            } catch (Exception ignore) {}
             
             // Create Products table
             stmt.execute("CREATE TABLE IF NOT EXISTS products (" +

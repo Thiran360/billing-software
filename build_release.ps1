@@ -1,4 +1,5 @@
 $ErrorActionPreference = 'Stop'
+$env:PATH = "C:\Program Files\Microsoft\jdk-17.0.21.102-hotspot\bin;$env:PATH"
 
 Write-Host "=== Building Client Release ===" -ForegroundColor Cyan
 

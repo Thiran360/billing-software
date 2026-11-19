@@ -16,7 +16,7 @@ public class BillDAO {
         if (bill.getDailyBillNo() <= 0) {
             bill.setDailyBillNo(getNextDailyBillNo(bill.getBillDate()));
         }
-        String insertBillSql = "INSERT INTO bills (customer_name, total_amount, payment_mode, paid_amount, pending_amount, customer_id, status, daily_bill_no, bill_date, show_balance_on_bill, discount) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String insertBillSql = "INSERT INTO bills (customer_name, total_amount, payment_mode, paid_amount, pending_amount, customer_id, status, daily_bill_no, bill_date, show_balance_on_bill, discount, previous_pending) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         String insertItemSql = "INSERT INTO bill_items (bill_id, product_id, quantity, unit_price, subtotal, tamil_name, unit_type) VALUES (?, ?, ?, ?, ?, ?, ?)";
         
         Connection conn = null;
@@ -43,6 +43,7 @@ public class BillDAO {
                 pstmtBill.setString(9, sdfSql.format(bill.getBillDate()));
                 pstmtBill.setInt(10, bill.isShowBalanceOnBill() ? 1 : 0);
                 pstmtBill.setDouble(11, bill.getDiscount());
+                pstmtBill.setDouble(12, bill.getPreviousPending());
                 pstmtBill.executeUpdate();
                 
                 try (ResultSet rs = pstmtBill.getGeneratedKeys()) {
@@ -130,6 +131,8 @@ public class BillDAO {
                     bill.setPendingAmount(rs.getDouble("pending_amount"));
                     bill.setCustomerTotalPending(rs.getDouble("customer_pending"));
                     try { bill.setDiscount(rs.getDouble("discount")); } catch (Exception ignore) {}
+                    try { bill.setPreviousPending(rs.getDouble("previous_pending")); } catch (Exception ignore) {}
+                    try { bill.setPreviousPending(rs.getDouble("previous_pending")); } catch (Exception ignore) {}
                     try {
                         bill.setStatus(rs.getString("status"));
                     } catch (SQLException ignore) {}
@@ -255,6 +258,7 @@ public class BillDAO {
                     bill.setCustomerTotalPending(custPending);
                     try { bill.setShowBalanceOnBill(rs.getInt("show_balance_on_bill") == 1); } catch (SQLException ignore) {}
                     try { bill.setDiscount(rs.getDouble("discount")); } catch (SQLException ignore) {}
+                    try { bill.setPreviousPending(rs.getDouble("previous_pending")); } catch (Exception ignore) {}
 
                     int custId = rs.getInt("customer_id");
                     if (!rs.wasNull() && custId > 0) {
