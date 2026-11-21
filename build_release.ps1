@@ -84,6 +84,9 @@ if (Test-Path "store_billing.db") {
 }
 Copy-Item -Path "db\*" -Destination $releaseDir -Recurse -Force -ErrorAction SilentlyContinue
 
+# Also update the root StoreBillingApp.jar so Start_Billing.bat in root works immediately
+Copy-Item -Path "$releaseDir\StoreBillingApp.jar" -Destination "StoreBillingApp.jar" -Force
+
 Write-Host "=== Build Complete! ===" -ForegroundColor Green
 Write-Host "Your client package is ready in the '$releaseDir' folder." -ForegroundColor Yellow
 Write-Host "Just zip this folder and send it to your client." -ForegroundColor Yellow

@@ -39,6 +39,14 @@ SyncExcel.java
 SyncExcel.class
 TestCombo.java
 TestCombo*.class
+CheckRemoved.java
+CheckRemoved.class
+InsertItems.java
+InsertItems.class
+ListProducts.java
+ListProducts.class
+RemoveItems.java
+RemoveItems.class
 Start_App.bat
 run.ps1
 excel_dump.txt

@@ -2429,7 +2429,7 @@ public class BillingPanel extends JPanel {
         String lblCash = printTamil ? "வரவு:" : "Cash:";
         String lblBalance = printTamil ? "பாக்கி:" : "Balance:";
 
-        SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy hh:mm a");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy hh:mma");
         String dateStr = dateFormat.format(bill.getBillDate() != null ? bill.getBillDate() : new java.util.Date());
         int displayNo = bill.getDailyBillNo() > 0 ? bill.getDailyBillNo() : (bill.getId() > 0 ? bill.getId() : 1);
         String noStr = "No. " + displayNo;
@@ -2462,24 +2462,24 @@ public class BillingPanel extends JPanel {
             html.append("<b style='font-size: 16px; font-weight: 900; color: black;'>QUOTATION</b><br>");
             html.append("</div><hr style='border: 1px dashed black;'>");
             
-            html.append("<table width='100%' cellpadding='0' cellspacing='0' style='font-size: 13px; font-weight: bold; color: black;'>");
+            html.append("<table width='100%' cellpadding='0' cellspacing='0'>");
             html.append("<tr>");
-            html.append("<td width='28%' align='left'><b>").append(noStr).append("</b></td>");
-            html.append("<td width='44%' align='center'><b>").append(dateStr).append("</b></td>");
-            html.append("<td width='28%' align='right'><b>").append(pageStr).append("</b></td>");
+            html.append("<td width='23%' align='left' style='font-size:13px;font-weight:bold;color:black;'><b>").append(noStr).append("</b></td>");
+            html.append("<td width='54%' align='center' nowrap style='font-size:13px;font-weight:bold;color:black;'><b>").append(dateStr).append("</b></td>");
+            html.append("<td width='23%' align='right' style='font-size:13px;font-weight:bold;color:black;'><b>").append(pageStr).append("</b></td>");
             html.append("</tr>");
-            html.append("</table>");
-            
-            html.append("<div style='margin-top: 3px; font-size: 13px; color: black;'><b>To: ").append(bill.getCustomerName().isEmpty() ? "Customer" : bill.getCustomerName()).append("</b><br>");
+            html.append("<tr>");
+            html.append("<td colspan='3' align='left' style='padding-top: 1px; font-size: 13px; color: black;'><b>To: ").append(bill.getCustomerName().isEmpty() ? "Customer" : bill.getCustomerName()).append("</b>");
             if (bill.getCustomerObj() != null) {
                 if (bill.getCustomerObj().getMobile() != null && !bill.getCustomerObj().getMobile().isEmpty()) {
-                    html.append("&nbsp;&nbsp;&nbsp;&nbsp;<b>Ph: ").append(bill.getCustomerObj().getMobile()).append("</b><br>");
+                    html.append("<br>&nbsp;&nbsp;&nbsp;&nbsp;<b>Ph: ").append(bill.getCustomerObj().getMobile()).append("</b>");
                 }
                 if (bill.getCustomerObj().getAddress() != null && !bill.getCustomerObj().getAddress().isEmpty()) {
-                    html.append("&nbsp;&nbsp;&nbsp;&nbsp;<b>").append(bill.getCustomerObj().getAddress()).append("</b><br>");
+                    html.append("<br>&nbsp;&nbsp;&nbsp;&nbsp;<b>").append(bill.getCustomerObj().getAddress()).append("</b>");
                 }
             }
-            html.append("</div><hr style='border: 1px dashed black;'>");
+            html.append("</td></tr></table>");
+            html.append("<hr style='border: 1px dashed black;'>");
             
             // 3-Column Table: எண் பொருள் | அளவு | மதிப்பு
             html.append("<table width='100%' cellspacing='0' cellpadding='1' style='font-size: 13px; font-weight: bold; color: black;'>");
@@ -2628,24 +2628,24 @@ public class BillingPanel extends JPanel {
                 previewHtml.append("<hr style='border-top: 1px dashed black; margin: 4px 0;'>");
                 previewHtml.append("</div>");
 
-                previewHtml.append("<table width='100%' cellpadding='1' cellspacing='0' style='font-size: 12px;'>");
+                previewHtml.append("<table width='100%' cellpadding='0' cellspacing='0' style='font-size: 12px;'>");
                 previewHtml.append("<tr>");
-                previewHtml.append("<td width='26%' align='left'><b>").append(noStr).append("</b></td>");
-                previewHtml.append("<td width='48%' align='center'><b>").append(dateStr).append("</b></td>");
-                previewHtml.append("<td width='26%' align='right'><b>").append(pageStr).append("</b></td>");
+                previewHtml.append("<td width='23%' align='left'><b>").append(noStr).append("</b></td>");
+                previewHtml.append("<td width='54%' align='center' nowrap><b>").append(dateStr).append("</b></td>");
+                previewHtml.append("<td width='23%' align='right'><b>").append(pageStr).append("</b></td>");
                 previewHtml.append("</tr>");
-                previewHtml.append("</table>");
-
-                previewHtml.append("<div style='margin-top: 4px; font-size: 12px;'><b>To: ").append(bill.getCustomerName().isEmpty() ? "Customer" : bill.getCustomerName()).append("</b><br>");
+                previewHtml.append("<tr>");
+                previewHtml.append("<td colspan='3' align='left' style='padding-top: 1px;'><b>To: ").append(bill.getCustomerName().isEmpty() ? "Customer" : bill.getCustomerName()).append("</b>");
                 if (bill.getCustomerObj() != null) {
                     if (bill.getCustomerObj().getMobile() != null && !bill.getCustomerObj().getMobile().isEmpty()) {
-                        previewHtml.append("&nbsp;&nbsp;&nbsp;&nbsp;<b>Ph: ").append(bill.getCustomerObj().getMobile()).append("</b><br>");
+                        previewHtml.append("<br>&nbsp;&nbsp;&nbsp;&nbsp;<b>Ph: ").append(bill.getCustomerObj().getMobile()).append("</b>");
                     }
                     if (bill.getCustomerObj().getAddress() != null && !bill.getCustomerObj().getAddress().isEmpty()) {
-                        previewHtml.append("&nbsp;&nbsp;&nbsp;&nbsp;<b>").append(bill.getCustomerObj().getAddress()).append("</b><br>");
+                        previewHtml.append("<br>&nbsp;&nbsp;&nbsp;&nbsp;<b>").append(bill.getCustomerObj().getAddress()).append("</b>");
                     }
                 }
-                previewHtml.append("</div><hr style='border-top: 1px dashed black; margin: 4px 0;'>");
+                previewHtml.append("</td></tr></table>");
+                previewHtml.append("<hr style='border-top: 1px dashed black; margin: 4px 0;'>");
 
                 previewHtml.append("<table width='100%' cellspacing='0' cellpadding='2' style='font-size: 13px;'>");
                 previewHtml.append("<tr>");

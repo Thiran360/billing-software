@@ -117,12 +117,12 @@ public class ThermalPrinterUtil {
 
         // 4. Bill Meta Info (Left align)
         out.write(new byte[]{0x1B, 0x61, 0x00}); // Left
-        SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy");
+        SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy hh:mma");
         String dateStr = sdf.format(bill.getBillDate() != null ? bill.getBillDate() : new Date());
         int bNo = bill.getDailyBillNo() > 0 ? bill.getDailyBillNo() : (bill.getId() > 0 ? bill.getId() : 1);
         String billNoStr = "No. " + bNo;
         String pageStr = "Page 1 / 1";
-        out.write(String.format("%-15s %-18s %15s\n", billNoStr, "   " + dateStr, pageStr).getBytes(StandardCharsets.US_ASCII));
+        out.write(String.format("%-12s %-24s %10s\n", billNoStr, dateStr, pageStr).getBytes(StandardCharsets.US_ASCII));
 
         String custName = bill.getCustomerName() != null && !bill.getCustomerName().trim().isEmpty() ? bill.getCustomerName() : "Customer";
         out.write(("To: " + custName + "\n").getBytes(StandardCharsets.US_ASCII));
